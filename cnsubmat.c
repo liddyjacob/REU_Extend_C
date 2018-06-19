@@ -14,13 +14,8 @@ int n, gmat[][SIZE], numv , vi, vj, color, path[SIZE];
   for (i = 1; i < numv; ++i){
     if (path[i]){ continue;}
     if (!(gmat[vi][i] == color )) {continue;}
-    if (pn_recursive(n - 1, gmat, numv, i, vj, color, path)){
-
-      for (int k = 0; k < numv; ++k){
-        if (path[k]){ printf("->%d", path[k]);}
-      }
+    if (pn_recursive(n - 1, gmat, numv, i, vj, color, path)){ 
       return 1;
-      
     }
   }
 
