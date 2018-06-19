@@ -84,11 +84,13 @@ main(int argc, char *argv[])
         hmat[j + 1][0] = (bit&i) ? 1 : 0;
       } 
       /* Now deal with this hmat */
-      if (kn_in_mat()
+      if (cn_in_mat(5, hmat, 0, 1)) {continue; }
+      if (kn_in_mat(5, hmat, 0, 0)) {continue; }
+      writemat(outfile, hmat, n+1);
     }
 
     /* Write g */
-		writemat(outfile,hmat,n+1);
+		//writemat(outfile,hmat,n+1);
 
     free(g);   /* After you finished with the graph */
   }
