@@ -4,8 +4,7 @@ gcc -O4 -o delvg ../gtools.o delvg.c
 #define SIZE 40
 
 #include "../gtools.h"
-#include "combinations.h"
-
+#include "combinations.c"
 
 /*******************************************************************************/
 void writemat(outfile,G,n)
@@ -30,14 +29,15 @@ void gtomat(g, n, G)
 graph *g;
 int n, G[SIZE][SIZE];
 {
-  unsigned i, j, bit, row;
+  unsigned i, j, k, bit, row;
 
   for (i=0;i<n;i++) {
     row = g[i]>>(WORDSIZE-n);
     for (bit=(1<<(n-1)),j=0;j<n;j++,bit>>=1) {
       /* Save graph in matrix form */
-      G[i][j] = (bit&row) ? 1 : 0;
-	  }
+      G[i][j] = (bit&row) ? 1 : 0; 
+    
+    }
 	}
 }
 /*******************************************************************************/
@@ -77,10 +77,12 @@ main(int argc, char *argv[])
       }
     }
 
-    /* Consider all possibilities of edges: */
-
-
-
+    for (i = 0; i < powersize(n); ++i){
+      for (bit = (1<<(n-1)), j = 0; j < n; bit>>=1, ++j){
+        hmat[0][j + 1] = (bit&i) ? 1 : 0;
+        hmat[j + 1][0] = (bit&i) ? 1 : 0;
+      } 
+    }
 
     /* Write g */
 		writemat(outfile,hmat,n+1);
