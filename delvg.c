@@ -5,6 +5,7 @@ gcc -O4 -o delvg ../gtools.o delvg.c
 
 #include "../gtools.h"
 #include "combinations.c"
+#include "tools.c"
 
 /*******************************************************************************/
 void writemat(outfile,G,n)
@@ -82,6 +83,8 @@ main(int argc, char *argv[])
         hmat[0][j + 1] = (bit&i) ? 1 : 0;
         hmat[j + 1][0] = (bit&i) ? 1 : 0;
       } 
+      /* Now deal with this hmat */
+      if (kn_in_mat()
     }
 
     /* Write g */
