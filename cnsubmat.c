@@ -6,7 +6,6 @@
 int pn_recursive(n, gmat, numv, vi, vj, color, path)
 int n, gmat[][SIZE], numv , vi, vj, color, path[SIZE];
 {
-  path[vi] = 1;
   unsigned i;
 
   if (n == 1) {return gmat[vi][vj] == color;}
@@ -14,12 +13,12 @@ int n, gmat[][SIZE], numv , vi, vj, color, path[SIZE];
   for (i = 1; i < numv; ++i){
     if (path[i]){ continue;}
     if (!(gmat[vi][i] == color )) {continue;}
+    path[i] = 1;
     if (pn_recursive(n - 1, gmat, numv, i, vj, color, path)){ 
       return 1;
     }
+    path[i] = 0;
   }
-
-  path[vi] = 0;
 
   return 0;
         
