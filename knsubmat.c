@@ -31,15 +31,45 @@ for (i = 1; i<=numv; i++){
 //printf("filled in %d elements to neighbor array \n", count);
 
 // now check for complete graph among the vertices in neighbors array
-int complete = 1;
-for (i = 0; i<count; i++){
-	for (j = 0; j<count; j++){
-		if ((i !=j) && (gmat[neighbors[i]][neighbors[j]] == 0)) { //if any pair doesn't have an edge
-			complete = 0;
+// instead of iterating over entire size of neighborhood, will take n-subsets and check each
+//
+
+unsigned int N = 1<< n; 
+int evercomplete = 0; //check if there is at least one complete graph
+int complete = 1; //check if a specific subgraph is complete
+int subset[n];
+for (i = 0; i<n; i++){
+	subset[i]=0;
+}
+int ncount = 0;
+int x;
+for (x=0; x<N; x++){
+	if (nbits(x) == n){
+// make subset
+//
+		for (i = 0; i<count; i++){
+			unsigned bit = 1 << i;
+			if(x & bit){
+				subset[ncount] = neighbors[i];
+				ncount++;
+			}
 		}
+
+// now check that everything in subset is complete
+
+		for (i = 0; i<n; i++){
+			for (j = 0; j<n; j++){
+				if ((i !=j) && (gmat[subset[i]][subset[j]] == 0)) { //if any pair doesn't have an edge
+				complete = 0;
+				}
+			}
+		}
+	}
+	if (complete){
+		evercomplete = 1;
 	}
 }
 
-printf("Is there a complete graph? %d \n", complete);
-return complete;
+printf("Is there a complete graph? %d \n", evercomplete);
+return evercomplete;
 }
