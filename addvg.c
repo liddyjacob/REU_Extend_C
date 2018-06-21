@@ -9,10 +9,47 @@ gcc -O4 -o addvg ../gtools.o addvg.c
 #include "cnsubmat.c"
 
 /*******************************************************************************/
+int no_spots(int gmat[][SIZE], unsigned spots[], int spotsize, int color){
+  unsigned i, j;
+  for (i = 0; i < spotsize; ++i){
+    for (j = i + 1; j < spotsize; ++j){
+      int s1 = spots[i];
+      int s2 = spots[j];
+
+      if (gmat[s1][s2] != color) { return 0;}
+    }
+  }
+  return 1;
+}
+
+
 int kn_in_mat(n, gmat, numv , color)
 int n, gmat[][SIZE], numv , color;
 {
-  return 1;
+  if (n == 3) return cn_in_mat(n, gmat, numv, color);
+  if (n != 5) return 1;
+  if (n == 5){
+    unsigned i, j, k, l, m;
+    for (i = 0; i < numv - 4; ++i){
+      if (gmat[0][i] != color) {continue;}
+      for (j = i + 1; j < numv - 3; ++j){
+        if (gmat[0][j] != color) {continue;}
+        for (k = j + 1; k < numv - 2; ++k){
+          if (gmat[0][k] != color) {continue;}
+          for (l = k + 1; l < numv - 1; ++l){
+            if (gmat[0][l] != color) {continue;}
+            for (m = l + 1; m < numv; ++m){
+              if (gmat[0][m] != color) {continue;}
+              // Check all possible combinations of i, j, k, l, m:
+              unsigned potent_k5[5] = {i, j, k, l, m};
+              if (no_spots(gmat, potent_k5, 5, color)) {return 1;} 
+            }
+          }
+        }
+      }
+    }
+  }
+  return 0;
 }
 
 void writemat(outfile,G,n)
