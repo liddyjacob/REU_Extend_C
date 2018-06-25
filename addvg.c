@@ -3,6 +3,7 @@ gcc -O4 -o addvg ../gtools.o addvg.c
 */
 #define SIZE 40
 
+#include "omp.h"
 #include "../gtools.h"
 #include "combinations.c"
 //#include "knsubmat.c"
@@ -29,6 +30,7 @@ int n, gmat[][SIZE], numv , color;
   if (n == 3) return cn_in_mat(n, gmat, numv, color);
   if (n != 5) return 1;
   if (n == 5){
+    if (numv < 5) {return 0;}
     unsigned i, j, k, l, m;
     for (i = 0; i < numv - 4; ++i){
       if (gmat[0][i] != color) {continue;}
@@ -145,6 +147,7 @@ main(int argc, char *argv[])
       }
     }
 
+    //#pragma omp parallel for
     for (i = 0; i < powersize(n); ++i){
       for (bit = (1<<(n-1)), j = 0; j < n; bit>>=1, ++j){
         hmat[0][j + 1] = (bit&i) ? 1 : 0;
