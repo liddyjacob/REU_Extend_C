@@ -12,12 +12,13 @@ gcc -O4 -o addvg ../gtools.o addvg.c
 /*******************************************************************************/
 int no_spots(int gmat[][SIZE], unsigned spots[], int spotsize, int color){
   unsigned i, j;
-  for (i = 0; i < spotsize; ++i){
+  for (i = 0; i < spotsize - 1; ++i){
     for (j = i + 1; j < spotsize; ++j){
       int s1 = spots[i];
       int s2 = spots[j];
+      //if (s1 == s2) {fprintf(stderr, "Repeat!\n");}
 
-      if (gmat[s1][s2] != color) { return 0;}
+      if (gmat[s1][s2] != color) {return 0;}
     }
   }
   return 1;
@@ -30,22 +31,21 @@ int n, gmat[][SIZE], numv , color;
   if (n == 3) return cn_in_mat(n, gmat, numv, color);
   if (n != 5) return 1;
   if (n == 5){
+    // NEED TO CHECK FOR 4 CONNECTIONS, NOT 5
     if (numv < 5) {return 0;}
     unsigned i, j, k, l, m;
-    for (i = 0; i < numv - 4; ++i){
+    for (i = 1; i < numv - 3; ++i){
       if (gmat[0][i] != color) {continue;}
-      for (j = i + 1; j < numv - 3; ++j){
+      for (j = i + 1; j < numv - 2; ++j){
         if (gmat[0][j] != color) {continue;}
-        for (k = j + 1; k < numv - 2; ++k){
+        for (k = j + 1; k < numv - 1; ++k){
           if (gmat[0][k] != color) {continue;}
-          for (l = k + 1; l < numv - 1; ++l){
+          for (l = k + 1; l < numv; ++l){
             if (gmat[0][l] != color) {continue;}
-            for (m = l + 1; m < numv; ++m){
-              if (gmat[0][m] != color) {continue;}
               // Check all possible combinations of i, j, k, l, m:
-              unsigned potent_k5[5] = {i, j, k, l, m};
-              if (no_spots(gmat, potent_k5, 5, color)) {return 1;} 
-            }
+            unsigned potent_k4[4] = {i, j, k, l};
+            if (no_spots(gmat, potent_k4, 4, color)) {return 1;} 
+            
           }
         }
       }
@@ -83,7 +83,6 @@ int n, G[SIZE][SIZE];
     for (bit=(1<<(n-1)),j=0;j<n;j++,bit>>=1) {
       /* Save graph in matrix form */
       G[i][j] = (bit&row) ? 1 : 0; 
-    
     }
 	}
 }
@@ -117,6 +116,10 @@ main(int argc, char *argv[])
     char bnc[7];
     memcpy(bnc, &bluestr[1], 7);
     bluen = atoi(bnc);
+
+  fprintf(stderr, "Red info:  Type = {%c}; Num = {%d}\n", redtype, redn);
+  fprintf(stderr, "Blue info: Type = {%c}; Num = {%d}\n", bluetype, bluen);
+
 
   graph *g;
   unsigned m, n, i, j, k, bit, row;
@@ -155,21 +158,26 @@ main(int argc, char *argv[])
       } 
       /* Now deal with this hmat */
 
+      
+      
       if (redtype == 'K'){ 
         if (kn_in_mat(redn, hmat, n + 1, 1)) continue;
       }
       if (redtype == 'C'){ 
         if (cn_in_mat(redn, hmat, n + 1, 1)) continue; 
       }
+      
 
+      
       if (bluetype == 'K'){ 
         if (kn_in_mat(bluen, hmat, n + 1, 0)) continue;
       }
       if (bluetype == 'C'){ 
         if (cn_in_mat(bluen, hmat, n + 1, 0)) continue; 
       }
- 
-      writemat(outfile, hmat, n+1);
+      
+  
+     writemat(outfile, hmat, n+1);
     }
 
     /* Write g */
