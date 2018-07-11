@@ -125,7 +125,6 @@ int n, gmat[][SIZE], numv , color, knlab[], lab;
   return 0;
 }
 
-
 void swaprows(G, i, j, n)
 int G[][SIZE], i, j, n;
 {
@@ -142,7 +141,21 @@ int G[][SIZE], i, j, n;
   }
 }
 
-void tikzprint;
+void printarr(outfile, G, n)
+FILE *outfile;
+int G[], n;
+{
+    int i,j, ecount;
+    ecount = 0;
+    fprintf(outfile, "  ");
+    for (i = 0; i < n; ++i){
+
+      fprintf(outfile, "%d ", G[i]); 
+      //if (i < 10) fprintf(outfile, " ", i);
+
+    }
+    fprintf(outfile, "\n");
+}
 
 
 void printmat(outfile, G, n)
@@ -166,16 +179,132 @@ int G[][SIZE], n;
       //if (i < 10) fprintf(outfile, " ", i);
       
       for (j = 0; j < n; ++j){
-        if (G[i][j] == 1) {fprintf(outfile, "%d ", G[i][j]);}
-        else fprintf(outfile, "  ");
+        fprintf(outfile, "%d ", G[i][j]);
         if (G[i][j] == 1) {ecount++;}
         
       }
       
       fprintf(outfile, "\n");
     }
-    fprintf(outfile, "\n^ecount: %d\n", ecount);
+    //fprintf(outfile, "\n^ecount: %d\n", ecount);
 
+}
+
+
+int outdegree(v, G, n, low, high)
+int v, G[][SIZE], n, low, high;
+{
+
+  int i;
+  int deg = 0;
+  for (i = 0; i < low; ++i){
+    if (G[v][i] == 1){ ++deg; }
+  }
+
+  for (i = high; i < n; ++i){
+    if (G[v][i] == 1){ ++deg; }
+  }
+
+  return deg;
+}
+
+
+void tikzprint(outfile, G, n)
+FILE* outfile;
+int G[][SIZE], n;
+{
+
+  int i, j, low, high, index, i2, j2;
+  int groups[4][SIZE];
+  char gchars[4][4][4] = {
+    {"AA", "AB", "AC", "AD"},
+    {"BA", "BB", "BC", "BD"},
+    {"CA", "CB", "CC", "CD"},
+    {"DA", "DB", "DC", "DD"}
+  };
+  int gpnum[4];
+
+
+  groups[0][0] = -1;
+  groups[1][1] = -1;
+  groups[2][2] = -1;
+  groups[3][3] = -1;
+
+
+  for (i = 0; i < 4; ++i){
+    low = i * n / 4;
+    high = ((i + 1) * n) / 4;
+    index = 0;
+    for (j = low; j < high ; ++j){
+      //fprintf(outfile, "%d -> %d\n", low, high);
+      //fprintf(outfile, "\tOutdegree of %d: %d\n", j, outdegree(j, G, n, low, high));
+      //fprintf(outfile, "\tGroups[%d][%d] = %d\n", i, i, groups[i][i]);
+      if ((groups[i][i] == -1) && (outdegree(j, G, n, low, high) == 0)){
+        groups[i][i] = j;
+      } else {
+        // Does not account for more than 4 vertices.
+        // Should check outdegree when there are more than 5 vertices.
+        if (index == i) {++index;} // Bug is here
+        groups[i][index] = j;
+        ++index;
+      }
+      //fprintf(outfile, "\tgroups[%d][%d] = %d\n", i, index - 1, groups[i][index - 1]);
+    }
+  }
+
+
+
+  printmat(outfile, groups, 4);
+  for (i = 0; i < 4; ++i){
+    for (j = 0; j < 4; ++j){
+      for (i2 = i + 1; i2 < 4; ++i2){
+        for (j2 = 0; j2 < 4; ++j2){
+          int v1 = groups[i][j];
+          int v2 = groups[i2][j2];
+          //char c1 = gchars[i][j];
+          //char c2 = gchars[i2][j2];
+          if (G[v1][v2] == 1) {
+            int temp = groups[i][j]; 
+            groups[i][j] = groups[i][i2];
+            groups[i][i2] = temp;
+            temp = groups[i2][j2];
+            groups[i2][j2] = groups[i2][i];
+            groups[i2][i] = temp;
+          }
+        }
+      }
+    }
+  }
+  
+  for ( i = 0; i < 4; ++i){
+    for (j = 0; j < 4; ++j){
+      for (i2 = i + 1; i2 < 4; ++i2){
+        for (j2 = 0; j2 < 4; ++j2){
+          int v1 = groups[i][j];
+          int v2 = groups[i2][j2];
+          char c1[4];
+            strcpy(c1, gchars[i][j]);
+          char c2[4];
+            strcpy(c2, gchars[i2][j2]); 
+
+          if (G[v1][v2] == 1) {fprintf(outfile, "\\draw (%s) -- (%s);\n", c1 , c2);}
+        }
+      }
+    }
+  }
+  
+  
+  
+  //printarr(outfile, group1, 4);
+  //printarr(outfile, group2, 4);
+  //printarr(outfile, group3, 4);
+
+
+  //for (i = 0; i < 4; ++i){
+
+
+
+  //} 
 }
 
 void writemat(outfile,G,n)
@@ -288,7 +417,10 @@ main(int argc, char *argv[])
     //}
     //printf("\n");
 
-    printmat(outfile, gmat, n);
+
+    printf("\n");
+    tikzprint(outfile, gmat, n);
+    //printmat(outfile, gmat, n);
     //writemat(outfile, gmat, n);
     
     
