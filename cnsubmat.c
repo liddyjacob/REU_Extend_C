@@ -1,20 +1,21 @@
 #include "../gtools.h"
+#include "omp.h"
 //#include <vector>
 // 1 is red
 // 0 is blue
 
-int pn_recursive(n, gmat, numv, vi, vj, color, path)
-int n, gmat[][SIZE], numv , vi, vj, color, path[SIZE];
+int pn_recursive(n, mat, numv, vi, vj, color, path)
+int n, mat[][SIZE], numv , vi, vj, color, path[SIZE];
 {
   unsigned i;
 
-  if (n == 1) {return gmat[vi][vj] == color;}
+  if (n == 1) {return mat[vi][vj] == color;}
 
   for (i = 1; i < numv; ++i){
     if (path[i]){ continue;}
-    if (!(gmat[vi][i] == color )) {continue;}
+    if (!(mat[vi][i] == color )) {continue;}
     path[i] = 1;
-    if (pn_recursive(n - 1, gmat, numv, i, vj, color, path)){ 
+    if (pn_recursive(n - 1, mat, numv, i, vj, color, path)){ 
       return 1;
     }
     path[i] = 0;
@@ -25,8 +26,8 @@ int n, gmat[][SIZE], numv , vi, vj, color, path[SIZE];
 }
 
 
-int find_pn(n, gmat, numv, vi, vj, color)
-int n, gmat[][SIZE], numv , vi, vj,color;
+int find_pn(n, mat, numv, vi, vj, color)
+int n, mat[][SIZE], numv , vi, vj,color;
 {
   unsigned i;
   int path[SIZE];
@@ -38,22 +39,24 @@ int n, gmat[][SIZE], numv , vi, vj,color;
   path[vj] = 1;
   path[0]  = 1;
 
-  return pn_recursive(n, gmat, numv, vi, vj, color, path);
+  return pn_recursive(n, mat, numv, vi, vj, color, path);
 }
 
-int cn_in_mat(n, gmat, numv , color)
-int n, gmat[][SIZE], numv , color;
-{
-  unsigned i, j;
+int cn_in_mat(n, mat, numv , color)
+int n, mat[][SIZE], numv , color;
+{ 
+  unsigned i, j; 
   for (i = 1; i < numv; ++i){
-    if (gmat[0][i] == color){
+    if (mat[0][i] == color){
       for (j = i + 1; j < numv; ++j){
-        if (gmat[0][j] == color){ 
-          if (find_pn(n - 2, gmat, numv, i, j, color)) { return 1; } 
-        }
+        if (mat[0][j] == color){ 
+          if (find_pn(n - 2, mat, numv, i, j, color)) { 
+            return 1;
+          }
+        } 
       }
     }
   }
-  
+
   return 0;
 }

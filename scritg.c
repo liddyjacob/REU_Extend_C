@@ -1,5 +1,5 @@
 /* compile with
-gcc -O4 -o addvg ../gtools.o addvg.c  
+gcc -O4 -o starg ../gtools.o scritg.c  
 */
 #define SIZE 40
 
@@ -28,7 +28,7 @@ int no_spots(int gmat[][SIZE], unsigned spots[], int spotsize, int color){
 int kn_in_mat(n, gmat, numv , color)
 int n, gmat[][SIZE], numv , color;
 {
-  if (n == 3) {return cn_in_mat(n, gmat, numv, color);}
+  if (n == 3) return cn_in_mat(n, gmat, numv, color); 
   if (n > 7) {return 0;}
   if (n == 6){
     // NEED TO CHECK FOR 4 CONNECTIONS, NOT 5
@@ -53,7 +53,7 @@ int n, gmat[][SIZE], numv , color;
       }
     }
   }
-  
+ 
   if (n == 5){
     // NEED TO CHECK FOR 4 CONNECTIONS, NOT 5
     if (numv < 5) {return 0;}
@@ -66,7 +66,7 @@ int n, gmat[][SIZE], numv , color;
           if (gmat[0][k] != color) {continue;}
           for (l = k + 1; l < numv; ++l){
             if (gmat[0][l] != color) {continue;}
-              // Check all possible combinations of i, j, k, l:
+              // Check all possible combinations of i, j, k, l, m:
             unsigned potent_k4[4] = {i, j, k, l};
             if (no_spots(gmat, potent_k4, 4, color)) {return 1;} 
             
@@ -75,7 +75,6 @@ int n, gmat[][SIZE], numv , color;
       }
     }
   }
-
   return 0;
 }
 
@@ -147,9 +146,10 @@ main(int argc, char *argv[])
 
 
   graph *g;
-  unsigned m, n, i, j, k, bit, row;
+  unsigned starcount, m, n, i, j, k, bit, row;
+  int critnum = 0;
   int gmat[SIZE][SIZE];
-  int hmat[SIZE][SIZE], list[SIZE];
+  int chmat[SIZE][SIZE], hmat[SIZE][SIZE], list[SIZE];
 
   int codetype;
   FILE *infile, *outfile;
@@ -167,15 +167,20 @@ main(int argc, char *argv[])
   {
 
     gtomat(g, n, gmat);
-    
+    printf("Current graph: \n");
+    writemat(outfile, gmat, n);
+    printf("\n");
+
     /* Extend g by one vertex */
     for (i=0; i < n ;i++){
       for (j=0; j < n ;j++){ 
         hmat[i+1][j+1] = gmat[i][j];
+        chmat[i+1][j+1] = gmat[i][j];
       }
     }
 
     //#pragma omp parallel for
+
     for (i = 0; i < powersize(n); ++i){
       for (bit = (1<<(n-1)), j = 0; j < n; bit>>=1, ++j){
         hmat[0][j + 1] = (bit&i) ? 1 : 0;
@@ -183,26 +188,45 @@ main(int argc, char *argv[])
       } 
       /* Now deal with this hmat */
 
-      
-      
-      if (redtype == 'K'){ 
-        if (kn_in_mat(redn, hmat, n + 1, 1)) continue;
-      }
-      if (redtype == 'C'){ 
-        if (cn_in_mat(redn, hmat, n + 1, 1)) continue; 
-      }
-      
+      for (k = 0; k < powersize(n); ++k){
+        for (bit = (1<<(n-1)), j = 0; j < n; bit>>=1, ++j){
+          chmat[0][j + 1] = (bit&k) ? hmat[0][j+1] : 2;
+          chmat[j + 1][0] = (bit&k) ? hmat[j+1][0] : 2;
+        }
+        
+        starcount = n;
+        for (j = 1; j < n + 1; ++j){
+          if (chmat[0][j] == 2) {--starcount;}
+        }
 
+        if (starcount <= critnum) {continue;}
       
-      if (bluetype == 'K'){ 
-        if (kn_in_mat(bluen, hmat, n + 1, 0)) continue;
+        if (redtype == 'K'){ 
+          if (kn_in_mat(redn, chmat, n + 1, 1)) continue;
+        }
+        if (redtype == 'C'){ 
+          if (cn_in_mat(redn, chmat, n + 1, 1)) continue; 
+        }
+
+        
+        if (bluetype == 'K'){ 
+          if (kn_in_mat(bluen, chmat, n + 1, 0)) continue;
+        }
+        if (bluetype == 'C'){ 
+          if (cn_in_mat(bluen, chmat, n + 1, 0)) continue; 
+        }
+
+
+        printf("Star number: %d/%d\n", starcount, n);
+        critnum = starcount;
+        writemat(outfile, hmat, n + 1);
+        for (j = 1; j < n + 1; ++j){
+          if (chmat[0][j] == 2){printf("No edge between 0 and %d\n", j);}
+        } 
+        
+
       }
-      if (bluetype == 'C'){ 
-        if (cn_in_mat(bluen, hmat, n + 1, 0)) continue; 
-      }
-      
-  
-     writemat(outfile, hmat, n+1);
+     //writemat(outfile, hmat, n+1);
     }
 
     /* Write g */
