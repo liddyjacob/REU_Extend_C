@@ -257,7 +257,8 @@ int G[][SIZE], n;
     high = ((i + 1) * n) / 4;
  
     for (j = 0; j < 4; ++j){
-      for (i2 = i + 1; i2 < 4; ++i2){
+      for (i2 = 0; i2 < 4; ++i2){
+        if (i2 == i) {continue;}
         for (j2 = 0; j2 < 4; ++j2){
           int v1 = groups[i][j];
           int v2 = groups[i2][j2];
@@ -287,8 +288,12 @@ int G[][SIZE], n;
         int temp = groups[i][j]; 
         groups[i][j] = groups[i][i];
         groups[i][i] = temp;
-      }
-      if (outdegree(v1, G, n, low, high) == 0){
+        
+        char cord[4];
+          strcpy(cord, gchars[i][i]);
+        fprintf(outfile, "    \\node (%s) at (cord%s) {}; \n", cord, cord);
+      
+      } else if (outdegree(v1, G, n, low, high) == 0){
         groups[i][j] = -1;
       } else {
         char cord[4];
